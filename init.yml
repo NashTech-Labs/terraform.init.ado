@@ -1,0 +1,72 @@
+parameters:
+- name: 'workingDirectory'
+  type: string
+  default: ''
+
+- name: 'initbackend'
+  type: string
+  default: ''
+
+- name: ProjectName
+  type: string
+  default: 'Testing'
+
+- name: 'workspace'
+  type: string
+  default: ''
+  
+- name: 'provider'
+  type: string
+  default: ''
+
+- name: tfc_organization_name
+  type: string
+  default: ''
+
+- name: terraformaccesstoken
+  type: string
+  default: ''
+
+- name: 'backendServiceArm'
+  type: string
+  default: ''
+
+- name: 'backendAzureRmResourceGroupName'
+  type: string
+  default: ''
+
+- name: 'backendAzureRmStorageAccountName'
+  type: string
+  default: ''
+
+- name: 'backendAzureRmContainerName'
+  type: string
+  default: ''
+
+- name: 'backendAzureRmKey'
+  type: string
+  default: ''
+
+steps:
+- script: |
+    terraform init -upgrade -backend-config="organization=${{ parameters.tfc_organization_name }}" -backend-config="token=${{ parameters.terraformaccesstoken }}"
+  workingDirectory: '${{ parameters.workingDirectory}}'
+  displayName: "Terraform Init Using TF Workspace for ${{ parameters.ProjectName }}"
+  name: "TerraformInitTFworkspace"
+  condition: eq( ${{ parameters.initbackend }}, 'tfworkspace')
+  env:
+    TF_WORKSPACE: "${{ parameters.workspace}}"
+
+- task: TerraformTaskV4@4
+  displayName: "Terraform Init Using Azure Backend for ${{ parameters.ProjectName }}"
+  name: "TerraformInitAzure"
+  condition: eq( ${{ parameters.initbackend }}, 'azure')
+  inputs:
+    provider: ${{ parameters.provider }}
+    command: 'init'
+    backendServiceArm: ${{ parameters.backendServiceArm }}
+    backendAzureRmResourceGroupName: ${{ parameters.backendAzureRmResourceGroupName }}
+    backendAzureRmStorageAccountName: ${{ parameters.backendAzureRmStorageAccountName }}
+    backendAzureRmContainerName: ${{ parameters.backendAzureRmContainerName }}
+    backendAzureRmKey: ${{ parameters.backendAzureRmKey }}
+    workingDirectory: '${{ parameters.workingDirectory}}'
